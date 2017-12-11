@@ -369,7 +369,14 @@ func (x *Exif) DateTime() (time.Time, error) {
 	dateStr := strings.TrimRight(string(tag.Val), "\x00")
 	// TODO(bradfitz,mpl): look for timezone offset, GPS time, etc.
 	// For now, just always return the time.Local timezone.
-	return time.ParseInLocation(exifTimeLayout, dateStr, time.Local)
+	if t, err := time.ParseInLocation(exifTimeLayout, dateStr, time.Local); err == nil {
+		return t, err
+	} else {
+		// Try parse as 2014-05-24
+		exifTimeLayout := "2006-01-02 15:04:05"
+		dateStr := strings.TrimRight(string(tag.Val), "\x00")
+		return time.ParseInLocation(exifTimeLayout, dateStr, time.Local)
+	}
 }
 
 func ratFloat(num, dem int64) float64 {
